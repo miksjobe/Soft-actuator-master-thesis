@@ -7,7 +7,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler   # Scheduler so e
 #import math                                                    # Not used?
 
 #----------------------------------------------------------------------------#
-# Grabs frame, resize and split ino different channels.
+# Grabs frame, resize and split into different channels, Image and HSV.
 def grab_frame(cap):
     frame = cv2.imread('test.png',1)
     #ret,frame = cap.read()
