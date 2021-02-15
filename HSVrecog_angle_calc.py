@@ -77,7 +77,7 @@ def find_angle():
     global cen3_old
     global radius_old
     global origo_old
-    # find the cen of the color marks
+    # find the centroid of the color marks
     if (find_center_with_color(img_hsv,lower_red, upper_red) != False):
         cen1 = find_center_with_color(img_hsv,lower_red, upper_red)
         cen1_old = cen1
