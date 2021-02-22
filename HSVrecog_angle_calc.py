@@ -5,15 +5,15 @@ import numpy as np                                              # Arrays and lin
 #import matplotlib.pyplot as plt                                # Not used?
 from apscheduler.schedulers.blocking import BlockingScheduler   # Scheduler so every operations takes equal time
 #import math                                                    # Not used?
+import time                                                     # Sleep
 
 #----------------------------------------------------------------------------#
-# Grabs frame, resize and split into different channels, Image and HSV.
+# Grabs frame, resize and split ino different channels.
 def grab_frame(cap):
-    frame = cv2.imread('test.png',1)
-    #ret,frame = cap.read()
-    #resized_img = cv2.resize(frame, (128,96), interpolation = cv2.INTER_AREA) # original shape: (480, 640)
-    resized_img = cv2.resize(frame, (640,480), interpolation = cv2.INTER_AREA)
-    img_bgr = resized_img
+    global width, height, scale
+    #frame = cv2.imread('test.png',1)
+    ret,frame = cap.read()
+    img_bgr = cv2.resize(frame, (int(width*scale),int(height*scale)), interpolation = cv2.INTER_AREA)
     img_hsv = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
     return img_bgr, img_hsv
 
@@ -77,7 +77,7 @@ def find_angle():
     global cen3_old
     global radius_old
     global origo_old
-    # find the centroid of the color marks
+    # find the cen of the color marks
     if (find_center_with_color(img_hsv,lower_red, upper_red) != False):
         cen1 = find_center_with_color(img_hsv,lower_red, upper_red)
         cen1_old = cen1
@@ -109,14 +109,27 @@ def find_angle():
     #------------------------------------------------------------------------#
     #Displays the points and lines between them on a graphisc window
     #------------------------------------------------------------------------#
-    cv2.namedWindow('image', cv2.WINDOW_AUTOSIZE)
-    img_bgr = cv2.circle(img_bgr, (int(origo[0]),int(origo[1])), int(radius),(200,150,150),1)
-    img_bgr = cv2.line(img_bgr, (int(cen1[0]),int(cen1[1])), (int(cen2[0]),int(cen2[1])), (0, 0, 255) , 1)
-    img_bgr = cv2.line(img_bgr, (int(cen2[0]),int(cen2[1])), (int(cen3[0]),int(cen3[1])), (0, 255, 0) , 1)
-    img_bgr = cv2.line(img_bgr, (int(cen3[0]),int(cen3[1])), (int(cen1[0]),int(cen1[1])), (0, 0, 0) , 1)
-    cv2.imshow('image', img_bgr)
-    cv2.waitKey(1)
-
+    if show=='all':
+        cv2.namedWindow('image', cv2.WINDOW_AUTOSIZE)
+        img_bgr = cv2.circle(img_bgr, (int(origo[0]),int(origo[1])), int(radius),(100,50,50),1)
+        img_bgr = cv2.line(img_bgr, (int(cen1[0]),int(cen1[1])), (int(cen2[0]),int(cen2[1])), (0, 0, 255) , 1)
+        img_bgr = cv2.line(img_bgr, (int(cen2[0]),int(cen2[1])), (int(cen3[0]),int(cen3[1])), (0, 255, 0) , 1)
+        img_bgr = cv2.line(img_bgr, (int(cen3[0]),int(cen3[1])), (int(cen1[0]),int(cen1[1])), (0, 0, 0) , 1)
+        cv2.imshow('image', img_bgr)
+        cv2.waitKey(1)
+    elif show=='lines':
+        global width, height, scale
+        cv2.namedWindow('image', cv2.WINDOW_AUTOSIZE)
+        img_bgr = np.zeros((int(height*scale),int(width*scale),3),np.uint8)
+        img_bgr[:] = 255,255,255
+        img_bgr = cv2.circle(img_bgr, (int(origo[0]),int(origo[1])), int(radius),(100,50,50),1)
+        img_bgr = cv2.line(img_bgr, (int(cen1[0]),int(cen1[1])), (int(cen2[0]),int(cen2[1])), (0, 0, 255) , 1)
+        img_bgr = cv2.line(img_bgr, (int(cen2[0]),int(cen2[1])), (int(cen3[0]),int(cen3[1])), (0, 255, 0) , 1)
+        img_bgr = cv2.line(img_bgr, (int(cen3[0]),int(cen3[1])), (int(cen1[0]),int(cen1[1])), (0, 0, 0) , 1)
+        cv2.imshow('image', img_bgr)
+        cv2.waitKey(1)
+    else:
+        pass
     return angle
 
 #----------------------------------------------------------------------------#
@@ -135,39 +148,50 @@ def send_data(data1, data2):#, data3):
 #----------------------------------------------------------------------------#
 # Sends 2 Bytes for 1 inserted data, this to increase resoultion of the sent value.
 def send_single_data(data):
-    data_bytes = bytes([])
+    #data = 12.34
+    #data_bytes = bytes([])
     data_times_100 = int(round(data,2)*100)
-    data_bytes +=  bytes([int(data_times_100/256)]) + bytes([int(data_times_100%256)])
+    data_bytes = bytes([int(data_times_100/256)]) + bytes([int(data_times_100%256)])
     # send the data
     ser.write(data_bytes)
-    print(list(data_bytes),data)
+    #print(list(data_bytes),data)
 
 #----------------------------------------------------------------------------#
 # Specifies what whall be run during schedueled tasks.
 def job_list():
+    global Ts
     angle=find_angle()
     print(angle)
-    #send_single_data(angle*3.6) #mult by 3.6 to get the most accuracy
+    #send_single_data(angle)
+    #print(ser.in_waiting)
+    #if ser.in_waiting>0:
 
+    #ser.write(bytes([255]))
+    #if ser.isOpen():
+    #    send_single_data(angle) #mult by 3.6 to get the most accuracy
+    #    if (ser.readline().decode('utf-8')=="255\r\n"): #and (ser.in_waiting>0):
+    #        ser.write(bytes([255]))
+    #else:
+    #    scheduler.shutdown(wait=False)
+    #    pass
+    #time.sleep(round(Ts*0.01,3))
 
 #----------------------------------------------------------------------------#
 # Main function starting from HERE:
 #----------------------------------------------------------------------------#
-# HSV codes range of used colors
-lower_red = np.array([0, 230, 150])
-upper_red = np.array([15, 255, 255])
-
-lower_green = np.array([50, 230, 150])
-upper_green = np.array([65, 255, 255])
-
-lower_black = np.array([0, 0, 0])
-upper_black = np.array([179, 255, 80])
+# HSV codes range of used colors. Use Calibrate_color_HSV_codes.py
+lower_red = np.array([ 0 , 77 , 155 ])
+upper_red = np.array([ 179 , 255 , 255 ])
+lower_green = np.array([ 24 , 214 , 64 ])
+upper_green = np.array([ 96 , 243 , 255 ])
+lower_black = np.array([ 0 , 0 , 9 ])
+upper_black = np.array([ 179 , 73 , 85 ])
 
 # Failsafe values for Null cases
 cen1_old=(0,0)
 cen2_old=(0,0)
 cen3_old=(0,0)
-radius_old=(1,1)
+radius_old=1
 origo_old=(1,1)
 
 #----------------------------------------------------------------------------#
@@ -175,11 +199,24 @@ origo_old=(1,1)
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 #ser = serial.Serial("COM12", 115200)
 #ser = serial.Serial('COM3', 9600)
+#ser.reset_input_buffer()
+
+ret, frame = cap.read()
+width = frame.shape[1]
+height = frame.shape[0]
+scale = 0.5
+Ts = 0.05
+
+#Show:      all=show capture and lines.  lines=only lines on white background       none = no visuals
+show = 'all'
+#show = 'lines'
+#show = 'none'
 
 #---------------------------------------------------------------------------#
-# scheduled task at Ts = 0.05s
+# scheduled task at Ts intervals
 scheduler = BlockingScheduler()
-scheduler.add_job(job_list,'interval',seconds=0.05,id='job_list',misfire_grace_time=10,coalesce=True)
+scheduler.add_job(job_list,'interval',seconds=Ts,id='job_list',misfire_grace_time=10,coalesce=True)
 scheduler.start()
+
 #----------------------------------------------------------------------------#
 cv2.destroyAllWindows()
