@@ -13,6 +13,9 @@ def grab_frame(cap):
     global width, height, scale
     #frame = cv2.imread('test.png',1)
     ret,frame = cap.read()
+    frame = cv2.rectangle(frame, (0,370), (220,500),(255,255,255),-1)
+    #frame = cv2.medianBlur(frame,5)
+    #frame = cv2.bilateralFilter(frame,15,50,50)
     img_bgr = cv2.resize(frame, (int(width*scale),int(height*scale)), interpolation = cv2.INTER_AREA)
     img_hsv = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
     return img_bgr, img_hsv
@@ -162,30 +165,31 @@ def job_list():
     global Ts
     angle=find_angle()
     print(angle)
-    #send_single_data(angle)
+    send_single_data(angle)
     #print(ser.in_waiting)
     #if ser.in_waiting>0:
 
     #ser.write(bytes([255]))
     #if ser.isOpen():
     #    send_single_data(angle) #mult by 3.6 to get the most accuracy
-    #    if (ser.readline().decode('utf-8')=="255\r\n"): #and (ser.in_waiting>0):
-    #        ser.write(bytes([255]))
+    #    if (ser.readline().decode('utf-8')=="0\r\n"):# and (ser.in_waiting>0):
+    #        ser.write(bytes([100]))
     #else:
     #    scheduler.shutdown(wait=False)
-    #    pass
+        #pass
     #time.sleep(round(Ts*0.01,3))
 
 #----------------------------------------------------------------------------#
 # Main function starting from HERE:
 #----------------------------------------------------------------------------#
 # HSV codes range of used colors. Use Calibrate_color_HSV_codes.py
-lower_red = np.array([ 0 , 77 , 155 ])
-upper_red = np.array([ 179 , 255 , 255 ])
-lower_green = np.array([ 24 , 214 , 64 ])
-upper_green = np.array([ 96 , 243 , 255 ])
-lower_black = np.array([ 0 , 0 , 9 ])
-upper_black = np.array([ 179 , 73 , 85 ])
+lower_red = np.array([ 0 , 157 , 116 ])
+upper_red = np.array([ 19 , 255 , 255 ])
+lower_green = np.array([ 43 , 95 , 78 ])
+upper_green = np.array([ 95 , 255 , 255 ])
+lower_black = np.array([ 0 , 16 , 0 ])
+upper_black = np.array([ 179 , 144 , 42 ])
+
 
 # Failsafe values for Null cases
 cen1_old=(0,0)
@@ -197,9 +201,9 @@ origo_old=(1,1)
 #----------------------------------------------------------------------------#
 # initiate the camera and the serial communication
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-#ser = serial.Serial("COM12", 115200)
+ser = serial.Serial("COM12", 115200)
 #ser = serial.Serial('COM3', 9600)
-#ser.reset_input_buffer()
+ser.reset_input_buffer()
 
 ret, frame = cap.read()
 width = frame.shape[1]

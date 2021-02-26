@@ -13,12 +13,12 @@ scale = 0.5
 cv2.namedWindow('Masks_R_G_B', cv2.WINDOW_AUTOSIZE)
 cv2.resizeWindow('Masks_R_G_B', int(width*scale*3),int(height*scale))
 
-lower_red = np.array([ 0 , 77 , 155 ])
-upper_red = np.array([ 179 , 255 , 255 ])
-lower_green = np.array([ 24 , 214 , 64 ])
-upper_green = np.array([ 96 , 243 , 255 ])
-lower_black = np.array([ 0 , 0 , 9 ])
-upper_black = np.array([ 179 , 73 , 85 ])
+lower_red = np.array([ 0 , 157 , 116 ])
+upper_red = np.array([ 19 , 255 , 255 ])
+lower_green = np.array([ 43 , 95 , 78 ])
+upper_green = np.array([ 95 , 255 , 255 ])
+lower_black = np.array([ 0 , 16 , 0 ])
+upper_black = np.array([ 179 , 144 , 42 ])
 
 def empty(a):
     pass
@@ -53,7 +53,7 @@ cv2.createTrackbar('BV_max', 'B_Trackbar', upper_black[2], 255, empty)
 while True:
     ret, frame = cap.read()
     #frame = cv2.imread('Image1.jpg',1)
-
+    #frame = cv2.rectangle(frame, (0,370), (220,500),(255,255,255),-1)
     frame = cv2.resize(frame, (int(width*scale),int(height*scale)), interpolation = cv2.INTER_AREA)
 
     #frame = cv2.medianBlur(frame,5)
