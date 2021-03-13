@@ -4,7 +4,7 @@ import serial                                                   # Serial communi
 import numpy as np                                              # Arrays and linear algebra
 #import matplotlib.pyplot as plt                                # Not used?
 from apscheduler.schedulers.blocking import BlockingScheduler   # Scheduler so every operations takes equal time
-#import math                                                    # Not used?
+import math                                                    # Not used?
 import time                                                     # Sleep
 
 #----------------------------------------------------------------------------#
@@ -13,7 +13,7 @@ def grab_frame(cap):
     global width, height, scale
     #frame = cv2.imread('test.png',1)
     ret,frame = cap.read()
-    frame = cv2.rectangle(frame, (0,370), (220,500),(255,255,255),-1)
+    frame = cv2.rectangle(frame, (0,round(0.75*height)), (round(0.35*width),height), (255,255,255), -1)
     #frame = cv2.medianBlur(frame,5)
     #frame = cv2.bilateralFilter(frame,15,50,50)
     img_bgr = cv2.resize(frame, (int(width*scale),int(height*scale)), interpolation = cv2.INTER_AREA)
@@ -65,7 +65,8 @@ def relative_angle(a, b, c):
     unit_ab = ab / np.linalg.norm(ab)
     unit_bc = bc / np.linalg.norm(bc)
     dot = np.dot(unit_ab,unit_bc)
-    angle = np.arccos(dot)*180/np.pi
+    #angle = np.arccos(dot)*180/np.pi
+    angle = math.acos(dot)*180/3.1415
 
     if angle <0: return 0
     elif angle >180: return 180
@@ -162,11 +163,12 @@ def send_single_data(data):
 #----------------------------------------------------------------------------#
 # Specifies what whall be run during schedueled tasks.
 def job_list():
-    global Ts
+    #global Ts
     angle=find_angle()
-    print(angle)
+    #print(angle)
     send_single_data(angle)
     #print(ser.in_waiting)
+    #print(ser.readline().decode('utf-8'))
     #if ser.in_waiting>0:
 
     #ser.write(bytes([255]))
@@ -183,12 +185,12 @@ def job_list():
 # Main function starting from HERE:
 #----------------------------------------------------------------------------#
 # HSV codes range of used colors. Use Calibrate_color_HSV_codes.py
-lower_red = np.array([ 0 , 157 , 116 ])
-upper_red = np.array([ 19 , 255 , 255 ])
-lower_green = np.array([ 43 , 95 , 78 ])
+lower_red = np.array([ 0 , 125 , 93 ])
+upper_red = np.array([ 18 , 255 , 255 ])
+lower_green = np.array([ 50 , 137 , 0 ])
 upper_green = np.array([ 95 , 255 , 255 ])
-lower_black = np.array([ 0 , 16 , 0 ])
-upper_black = np.array([ 179 , 144 , 42 ])
+lower_black = np.array([ 0 , 0 , 0 ])
+upper_black = np.array([ 179 , 255 , 63 ])
 
 
 # Failsafe values for Null cases
@@ -203,7 +205,7 @@ origo_old=(1,1)
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 ser = serial.Serial("COM12", 115200)
 #ser = serial.Serial('COM3', 9600)
-ser.reset_input_buffer()
+#ser.reset_input_buffer()
 
 ret, frame = cap.read()
 width = frame.shape[1]
@@ -212,14 +214,14 @@ scale = 0.5
 Ts = 0.05
 
 #Show:      all=show capture and lines.  lines=only lines on white background       none = no visuals
-show = 'all'
+#show = 'all'
 #show = 'lines'
-#show = 'none'
+show = 'none'
 
 #---------------------------------------------------------------------------#
 # scheduled task at Ts intervals
 scheduler = BlockingScheduler()
-scheduler.add_job(job_list,'interval',seconds=Ts,id='job_list',misfire_grace_time=10,coalesce=True)
+scheduler.add_job(job_list,'interval',seconds=Ts,id='job_list')
 scheduler.start()
 
 #----------------------------------------------------------------------------#
